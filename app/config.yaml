@@ -1,0 +1,16 @@
+database:
+  primary_dsn: "postgres://postgres:postgres@localhost:5432/dvdrental?sslmode=disable"
+  replica_dsn:  "postgres://postgres:postgres@localhost:5433/dvdrental?sslmode=disable"
+
+api:
+  port: 8080
+
+simulator:
+  enabled: true
+  rate_per_second: 10
+  workers: 4
+  weights:
+    rental: 40
+    return: 30
+    customer_churn: 10
+    read: 20

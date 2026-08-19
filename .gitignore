@@ -1,0 +1,20 @@
+# Build output
+bin/
+
+# Postgres data directories
+database/datadir/
+
+# Go
+app/vendor/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp
