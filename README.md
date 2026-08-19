@@ -1,4 +1,4 @@
-# PG-PLAYGROUND
+![PG Playground](assets/banner.svg)
 
 A collection of test experiments backed by postgres.
 
