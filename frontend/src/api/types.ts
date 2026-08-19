@@ -45,10 +45,25 @@ export interface SimulatorSnapshot {
   errors: number
 }
 
+export interface WeightConfig {
+  rental: number
+  return: number
+  customer_churn: number
+  read: number
+}
+
+export interface SubscriptionStatus {
+  name: string
+  enabled: boolean
+}
+
 export interface Stats {
   lag: Lag[] | null
   tables: TableState[] | null
   slots: SlotHealth[] | null
   workers: WorkerInfo
   simulator: SimulatorSnapshot
+  weights: WeightConfig
+  rate: number
+  subscriptions: SubscriptionStatus[] | null
 }

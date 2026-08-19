@@ -6,6 +6,8 @@ import { LagChart } from './components/LagChart'
 import { TableSyncGrid } from './components/TableSyncGrid'
 import { SlotWorkerStatus } from './components/SlotWorkerStatus'
 import { ThroughputCounters } from './components/ThroughputCounters'
+import { WeightsControl } from './components/WeightsControl'
+import { ReplicationControl } from './components/ReplicationControl'
 import './styles.css'
 
 const POLL_MS = 1000
@@ -35,6 +37,8 @@ export default function App() {
         </div>
         <ThroughputCounters snapshot={data?.simulator ?? null} intervalMs={POLL_MS} />
         <SlotWorkerStatus slots={data?.slots ?? null} workers={data?.workers ?? null} />
+        <WeightsControl currentWeights={data?.weights ?? null} currentRate={data?.rate ?? null} />
+        <ReplicationControl subscriptions={data?.subscriptions ?? null} />
         <div className="span-2">
           <TableSyncGrid tables={data?.tables ?? null} />
         </div>

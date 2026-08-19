@@ -37,14 +37,16 @@ func main() {
 	log.Println("connected to primary and replica")
 
 	metrics := simulator.NewMetrics()
+	weights := simulator.NewWeightStore(cfg.Simulator.Weights)
+	rate := simulator.NewRateStore(cfg.Simulator.RatePerSecond)
 
 	if cfg.Simulator.Enabled {
 		log.Printf("starting simulator: %d workers, %d ops/sec", cfg.Simulator.Workers, cfg.Simulator.RatePerSecond)
-		go simulator.Run(ctx, cfg.Simulator, conns.Primary, conns.Replica, metrics)
+		go simulator.Run(ctx, cfg.Simulator, conns.Primary, conns.Replica, metrics, weights, rate)
 	}
 
 	addr := fmt.Sprintf(":%d", cfg.API.Port)
-	srv := &http.Server{Addr: addr, Handler: api.NewRouter(conns, metrics)}
+	srv := &http.Server{Addr: addr, Handler: api.NewRouter(conns, metrics, weights, rate)}
 
 	go func() {
 		log.Printf("API listening on %s", addr)

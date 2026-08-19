@@ -74,15 +74,12 @@ const (
 	opRead
 )
 
-func Run(ctx context.Context, cfg config.SimulatorConfig, primary, replica *pgxpool.Pool, m *Metrics) {
+func Run(ctx context.Context, cfg config.SimulatorConfig, primary, replica *pgxpool.Pool, m *Metrics, ws *WeightStore, rs *RateStore) {
 	ids, err := loadLookupIDs(ctx, primary)
 	if err != nil {
 		log.Printf("simulator: failed to load lookup IDs: %v", err)
 		return
 	}
-
-	ops := buildWeightedOps(cfg.Weights)
-	interval := time.Second / time.Duration(cfg.RatePerSecond)
 
 	var wg sync.WaitGroup
 	for i := 0; i < cfg.Workers; i++ {
@@ -96,7 +93,7 @@ func Run(ctx context.Context, cfg config.SimulatorConfig, primary, replica *pgxp
 				default:
 				}
 
-				op := ops[rand.Intn(len(ops))]
+				op := ws.Pick()
 				var err error
 				switch op {
 				case opRental:
@@ -117,10 +114,11 @@ func Run(ctx context.Context, cfg config.SimulatorConfig, primary, replica *pgxp
 					log.Printf("simulator op %d: %v", op, err)
 				}
 
+				sleep := time.Duration(cfg.Workers) * time.Second / time.Duration(rs.Get())
 				select {
 				case <-ctx.Done():
 					return
-				case <-time.After(interval * time.Duration(cfg.Workers)):
+				case <-time.After(sleep):
 				}
 			}
 		}()
@@ -129,22 +127,6 @@ func Run(ctx context.Context, cfg config.SimulatorConfig, primary, replica *pgxp
 	wg.Wait()
 }
 
-func buildWeightedOps(w config.WeightConfig) []opType {
-	var ops []opType
-	for range w.Rental {
-		ops = append(ops, opRental)
-	}
-	for range w.Return {
-		ops = append(ops, opReturn)
-	}
-	for range w.CustomerChurn {
-		ops = append(ops, opChurn)
-	}
-	for range w.Read {
-		ops = append(ops, opRead)
-	}
-	return ops
-}
 
 func loadLookupIDs(ctx context.Context, pool *pgxpool.Pool) (*lookupIDs, error) {
 	ids := &lookupIDs{}

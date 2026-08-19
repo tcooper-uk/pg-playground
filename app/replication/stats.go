@@ -138,6 +138,39 @@ func GetSlotHealth(ctx context.Context, primary *pgxpool.Pool) ([]SlotHealth, er
 	return results, rows.Err()
 }
 
+type SubscriptionStatus struct {
+	Name    string `json:"name"`
+	Enabled bool   `json:"enabled"`
+}
+
+func GetSubscriptionStatus(ctx context.Context, replica *pgxpool.Pool) ([]SubscriptionStatus, error) {
+	rows, err := replica.Query(ctx, `SELECT subname, subenabled FROM pg_subscription`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []SubscriptionStatus
+	for rows.Next() {
+		var s SubscriptionStatus
+		if err := rows.Scan(&s.Name, &s.Enabled); err != nil {
+			return nil, err
+		}
+		results = append(results, s)
+	}
+	return results, rows.Err()
+}
+
+func PauseSubscription(ctx context.Context, replica *pgxpool.Pool, name string) error {
+	_, err := replica.Exec(ctx, "ALTER SUBSCRIPTION "+name+" DISABLE")
+	return err
+}
+
+func ResumeSubscription(ctx context.Context, replica *pgxpool.Pool, name string) error {
+	_, err := replica.Exec(ctx, "ALTER SUBSCRIPTION "+name+" ENABLE")
+	return err
+}
+
 func GetWorkerInfo(ctx context.Context, primary, replica *pgxpool.Pool) (*WorkerInfo, error) {
 	info := &WorkerInfo{}
 
